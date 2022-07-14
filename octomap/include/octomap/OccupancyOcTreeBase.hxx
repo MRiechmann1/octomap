@@ -650,7 +650,7 @@ namespace octomap {
     // Initialization phase -------------------------------------------------------
     OcTreeKey current_key;
     if ( !OcTreeBaseImpl<NODE,AbstractOccupancyOcTree>::coordToKeyChecked(origin, current_key) ) {
-      OCTOMAP_WARNING_STR("Coordinates out of bounds during ray casting");
+      //OCTOMAP_WARNING_STR("Coordinates out of bounds during ray casting");
       return false;
     }
 
@@ -724,7 +724,7 @@ namespace octomap {
       if ((step[dim] < 0 && current_key[dim] == 0)
     		  || (step[dim] > 0 && current_key[dim] == 2* this->tree_max_val-1))
       {
-        OCTOMAP_WARNING("Coordinate hit bounds in dim %d, aborting raycast\n", dim);
+        //OCTOMAP_WARNING("Coordinate hit bounds in dim %d, aborting raycast\n", dim);
         // return border point nevertheless:
         end = this->keyToCoord(current_key);
         return false;

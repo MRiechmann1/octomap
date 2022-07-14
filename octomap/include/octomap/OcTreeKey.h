@@ -91,6 +91,14 @@ namespace octomap {
       return( (k[0] != other[0]) || (k[1] != other[1]) || (k[2] != other[2]) );
     }
     
+    bool operator<(const OcTreeKey& other) const {
+      if (k[0] != other.k[0])
+        return k[0] < other.k[0];
+      if (k[1] != other.k[1])
+        return k[1] < other.k[1];
+      return k[2] < other.k[2];
+    }
+
     OcTreeKey& operator=(const OcTreeKey& other){
       k[0] = other.k[0]; k[1] = other.k[1]; k[2] = other.k[2];
       return *this;
