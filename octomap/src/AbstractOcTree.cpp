@@ -52,6 +52,7 @@ namespace octomap {
        // TODO: check is_good of finished stream, return
        write(file);
        file.close();
+       std::cout << "Wrote tree to file..." << std::endl;
      }
 
      return true;
