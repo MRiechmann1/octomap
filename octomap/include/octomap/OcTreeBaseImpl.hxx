@@ -41,6 +41,45 @@
 
 namespace octomap {
 
+  template <class NODE>
+  GridMap<NODE>::GridMap() :
+      resolution(0), minX(0), minY(0), minZ(0), maxX(0), maxY(0), maxZ(0),
+      sizeX(0), sizeY(0), sizeZ(0), gridmap(0) {
+  }
+
+  template <class NODE>
+  GridMap<NODE>::GridMap(float res, float minXValue, float minYValue, float minZValue, float maxXValue, float maxYValue, float maxZValue) :
+      resolution(res), minX(floor(minXValue / resolution) * resolution), minY(floor(minYValue / resolution) * resolution), minZ(floor(minZValue / resolution) * resolution), 
+      maxX(ceil(maxXValue / resolution) * resolution), maxY(ceil(maxYValue / resolution) * resolution), maxZ(ceil(maxZValue / resolution) * resolution),
+      sizeX((maxX - minX) /  resolution), sizeY((maxY - minY) /  resolution), sizeZ((maxZ - minZ) /  resolution), gridmap(new NODE[sizeX*sizeY*sizeZ]) {
+        std::cout << sizeX << " " << sizeY << " " << sizeZ << std::endl;
+  }
+
+  template <class NODE>
+  bool GridMap<NODE>::inMap(float x, float y, float z) const{
+    return x >= minX && x <= maxX && y >= minY && y <= maxY && z >= minZ && z <= maxZ; 
+  }
+
+  /* returns the node for the coordinates in 3d space*/
+  template <class NODE>
+  NODE& GridMap<NODE>::operator()(float x, float y, float z) const{
+      int xKey = (int)((x - minX) / resolution); 
+      int yKey = (int)((y - minY) / resolution); 
+      int zKey = (int)((z - minZ) / resolution); 
+ 
+      return gridmap[xKey + yKey * sizeX + zKey * sizeX * sizeY];
+  }
+
+  template <class NODE>
+  void GridMap<NODE>::indexToXYZ(int index, float& x, float& y, float &z) {
+    int zPos = index / (sizeX * sizeY);
+    int yPos = (index % (sizeX * sizeY)) / sizeX;
+    int xPos = index % sizeX;
+
+    x = (float) xPos * resolution + minX; //+ resolution/2.0;
+    y = (float) yPos * resolution + minY; //+ resolution/2.0;
+    z = (float) zPos * resolution + minZ; //+ resolution/2.0;
+  }
 
   template <class NODE,class I>
   OcTreeBaseImpl<NODE,I>::OcTreeBaseImpl(double in_resolution) :
@@ -1115,5 +1154,18 @@ namespace octomap {
     return x*y*z;
   }
 
+  template <class NODE,class I>
+  GridMap<NODE> OcTreeBaseImpl<NODE,I>::gridmap(int depth) {
+    float levelResolution = resolution * ( 1 << (tree_depth - depth));
+    this->calcMinMax();
+    std::cout << levelResolution << std::endl;
+    GridMap<NODE> gridMap(levelResolution, min_value[0], min_value[1], min_value[2], max_value[0], max_value[1], max_value[2]);
 
+    for (leaf_iterator it = this->begin_leafs(depth), end = this->end_leafs(); it != end; it++) {
+      float v = gridMap(it.getX(), it.getY(), it.getZ()).getValue();
+      gridMap(it.getX(), it.getY(), it.getZ()).copyData(*it);
+    }
+
+    return gridMap;
+  }
 }

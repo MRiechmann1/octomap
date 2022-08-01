@@ -47,6 +47,51 @@
 
 
 namespace octomap {
+
+  template<class NODE>
+  class GridMap {
+    public:
+      struct Iterator {
+          using iterator_category = std::forward_iterator_tag;
+          using difference_type   = std::ptrdiff_t;
+          using value_type        = NODE;
+          using pointer           = NODE*;  // or also value_type*
+          using reference         = NODE&;  // or also value_type&
+          int index = 0;
+
+          Iterator(pointer ptr) : m_ptr(ptr) {}
+          
+          reference operator*() const { return *m_ptr; }
+          pointer operator->() { return m_ptr; }
+
+          // Prefix increment
+          Iterator& operator++() { m_ptr++; index++; return *this; }  
+
+          // Postfix increment
+          Iterator operator++(int) { Iterator tmp = *this; ++(*this); return tmp; }
+
+          friend bool operator== (const Iterator& a, const Iterator& b) { return a.m_ptr == b.m_ptr; };
+          friend bool operator!= (const Iterator& a, const Iterator& b) { return a.m_ptr != b.m_ptr; }; 
+
+          private:
+            pointer m_ptr;
+      };
+
+      Iterator begin() { return Iterator(gridmap); }
+      Iterator end()   { return Iterator(& gridmap[sizeX * sizeY * sizeZ]); }
+
+    public:
+      GridMap();
+      GridMap(float res, float minXValue, float minYValue, float minZValue, float maxXValue, float maxYValue, float maxZValue);
+      NODE& operator()(float x, float y, float z) const;
+      void indexToXYZ(int index, float& x, float& y, float &z);
+      bool inMap(float x, float y, float z) const;
+    private:
+      float resolution;
+      float minX, minY, minZ, maxX, maxY, maxZ;
+      int sizeX, sizeY, sizeZ;
+      NODE *gridmap;
+  };
   
   // forward declaration for NODE children array
   class AbstractOcTreeNode;
@@ -496,6 +541,8 @@ namespace octomap {
     inline point3d keyToCoord(const OcTreeKey& key, unsigned depth) const{
       return point3d(float(keyToCoord(key[0], depth)), float(keyToCoord(key[1], depth)), float(keyToCoord(key[2], depth)));
     }
+
+    GridMap<NODE> gridmap(int depth);
 
  protected:
     /// Constructor to enable derived classes to change tree constants.
