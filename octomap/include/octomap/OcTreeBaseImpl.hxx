@@ -51,9 +51,48 @@ namespace octomap {
   GridMap<NODE>::GridMap(float res, float minXValue, float minYValue, float minZValue, float maxXValue, float maxYValue, float maxZValue) :
       resolution(res), minX(floor(minXValue / resolution) * resolution), minY(floor(minYValue / resolution) * resolution), minZ(floor(minZValue / resolution) * resolution), 
       maxX(ceil(maxXValue / resolution) * resolution), maxY(ceil(maxYValue / resolution) * resolution), maxZ(ceil(maxZValue / resolution) * resolution),
+      maxXIndex((maxX - minX) / resolution), maxYIndex((maxY - minY) / resolution), maxZIndex((maxZ - minZ) / resolution),
       sizeX((maxX - minX) /  resolution), sizeY((maxY - minY) /  resolution), sizeZ((maxZ - minZ) /  resolution), gridmap(new NODE[sizeX*sizeY*sizeZ]) {
         std::cout << sizeX << " " << sizeY << " " << sizeZ << std::endl;
   }
+
+  template <class NODE>
+  int GridMap<NODE>::ray(point3d& origin, point3d& direction) const {
+    float xKey = ((origin.x() - minX) / resolution); 
+    float yKey = ((origin.y() - minY) / resolution); 
+    float zKey = ((origin.z() - minZ) / resolution); 
+    
+    float directionLength = std::max(direction.x(), std::max(direction.y(), direction.z()));//std::sqrt(std::pow(direction.x(), 2) + std::pow(direction.y(), 2) + std::pow(direction.z(), 2));
+    float xStep = direction.x() / directionLength;
+    float yStep = direction.y() / directionLength;
+    float zStep = direction.z() / directionLength;
+
+
+    //prüfen ob in map
+    while (xKey >= 0 && yKey >= 0 && zKey >= 0 && 
+        xKey < maxXIndex && 
+        yKey < maxYIndex && 
+        zKey < maxZIndex && 
+        gridmap[(int)xKey + (int)yKey * sizeX + (int)zKey * sizeX * sizeY].getOccupancy() <= 0.5) {
+      xKey += xStep;
+      yKey += yStep;
+      zKey += zStep;
+    }
+
+    // if is in map: return distan origin to key
+    // if not in map return error value -> 
+    if (xKey >= 0 && yKey >= 0 && zKey >= 0 && 
+        xKey < maxXIndex && 
+        yKey < maxYIndex && 
+        zKey < maxZIndex ) {
+      /*point3d found(xKey * resolution + minX, yKey * resolution + minY, zKey * resolution + minZ);
+      return std::sqrt(std::pow(origin.x() - found.x(), 2) + std::pow(origin.y() - found.y(), 2) + std::pow(origin.z() - found.z(), 2));*/
+      return (int)xKey + (int)yKey * sizeX + (int)zKey * sizeX * sizeY;
+    }
+
+    return -1;
+  }
+
 
   template <class NODE>
   bool GridMap<NODE>::inMap(float x, float y, float z) const{
@@ -62,16 +101,29 @@ namespace octomap {
 
   /* returns the node for the coordinates in 3d space*/
   template <class NODE>
-  NODE& GridMap<NODE>::operator()(float x, float y, float z) const{
-      int xKey = (int)((x - minX) / resolution); 
-      int yKey = (int)((y - minY) / resolution); 
-      int zKey = (int)((z - minZ) / resolution); 
- 
-      return gridmap[xKey + yKey * sizeX + zKey * sizeX * sizeY];
+  NODE& GridMap<NODE>::operator()(float x, float y, float z) const{ 
+      return gridmap[XYZToIndex(x, y, z)];
   }
 
   template <class NODE>
-  void GridMap<NODE>::indexToXYZ(int index, float& x, float& y, float &z) {
+  NODE& GridMap<NODE>::operator()(int index) const {
+    return gridmap[index];
+  }
+
+  template <class NODE>
+  int GridMap<NODE>::XYZToIndex(float x, float y, float z) const {
+      if (!inMap(x, y, z)) {
+        return -1;
+      }
+      int xKey = (int)((x - minX) / resolution); 
+      int yKey = (int)((y - minY) / resolution); 
+      int zKey = (int)((z - minZ) / resolution); 
+
+      return xKey + yKey * sizeX + zKey * sizeX * sizeY;
+  }
+
+  template <class NODE>
+  void GridMap<NODE>::indexToXYZ(int index, float& x, float& y, float &z) const {
     int zPos = index / (sizeX * sizeY);
     int yPos = (index % (sizeX * sizeY)) / sizeX;
     int xPos = index % sizeX;

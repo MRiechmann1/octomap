@@ -83,12 +83,16 @@ namespace octomap {
     public:
       GridMap();
       GridMap(float res, float minXValue, float minYValue, float minZValue, float maxXValue, float maxYValue, float maxZValue);
+      int ray(point3d& origin, point3d& direction) const;
       NODE& operator()(float x, float y, float z) const;
-      void indexToXYZ(int index, float& x, float& y, float &z);
+      NODE& operator()(int index) const;
+      void indexToXYZ(int index, float& x, float& y, float &z) const;
+      int XYZToIndex(float x, float y, float z) const;
       bool inMap(float x, float y, float z) const;
     private:
       float resolution;
       float minX, minY, minZ, maxX, maxY, maxZ;
+      int maxXIndex, maxYIndex, maxZIndex;
       int sizeX, sizeY, sizeZ;
       NODE *gridmap;
   };
