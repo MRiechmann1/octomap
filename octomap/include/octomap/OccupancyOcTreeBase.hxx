@@ -639,7 +639,7 @@ namespace octomap {
     }
 
     return true;
-  }
+}
 
   template <class NODE>
   bool OccupancyOcTreeBase<NODE>::castRay(const point3d& origin, const point3d& directionP, point3d& end,
