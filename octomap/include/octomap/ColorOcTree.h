@@ -131,11 +131,11 @@ namespace octomap {
     ColorOcTreeNode* setNodeColor(const OcTreeKey& key, uint8_t r, 
                                  uint8_t g, uint8_t b);
 
-    ColorOcTreeNode* setNodeColor(float x, float y, 
-                                 float z, uint8_t r, 
+    ColorOcTreeNode* setNodeColor(double x, double y, 
+                                 double z, uint8_t r, 
                                  uint8_t g, uint8_t b) {
       OcTreeKey key;
-      if (!this->coordToKeyChecked(point3d(x,y,z), key)) return NULL;
+      if (!this->coordToKeyChecked(x,y,z, key)) return NULL;
       return setNodeColor(key,r,g,b);
     }
 
@@ -143,11 +143,11 @@ namespace octomap {
     ColorOcTreeNode* averageNodeColor(const OcTreeKey& key, uint8_t r, 
                                   uint8_t g, uint8_t b);
     
-    ColorOcTreeNode* averageNodeColor(float x, float y, 
-                                      float z, uint8_t r, 
+    ColorOcTreeNode* averageNodeColor(double x, double y, 
+                                      double z, uint8_t r, 
                                       uint8_t g, uint8_t b) {
       OcTreeKey key;
-      if (!this->coordToKeyChecked(point3d(x,y,z), key)) return NULL;
+      if (!this->coordToKeyChecked(x,y,z, key)) return NULL;
       return averageNodeColor(key,r,g,b);
     }
 
@@ -155,11 +155,11 @@ namespace octomap {
     ColorOcTreeNode* integrateNodeColor(const OcTreeKey& key, uint8_t r, 
                                   uint8_t g, uint8_t b);
     
-    ColorOcTreeNode* integrateNodeColor(float x, float y, 
-                                      float z, uint8_t r, 
+    ColorOcTreeNode* integrateNodeColor(double x, double y, 
+                                      double z, uint8_t r, 
                                       uint8_t g, uint8_t b) {
       OcTreeKey key;
-      if (!this->coordToKeyChecked(point3d(x,y,z), key)) return NULL;
+      if (!this->coordToKeyChecked(x,y,z, key)) return NULL;
       return integrateNodeColor(key,r,g,b);
     }
 
